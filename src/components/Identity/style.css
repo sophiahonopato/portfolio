@@ -1,0 +1,110 @@
+.identity {
+  position: relative;
+  padding: clamp(6rem, 14vh, 10rem) 0;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.identity__manifesto {
+  margin-bottom: clamp(4rem, 10vh, 7rem);
+}
+
+.identity__line {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  margin: 0;
+  color: var(--color-dark);
+}
+
+.identity__line--accent {
+  color: var(--color-blue-500);
+}
+
+.identity__about {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+}
+
+.identity__paragraph {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  line-height: 1.6;
+  color: var(--color-dark);
+  max-width: 46ch;
+}
+
+.identity__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.identity__stat {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-blue-100);
+  padding-top: 0.75rem;
+}
+
+.identity__stat-value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--color-dark);
+}
+
+.identity__stat-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-gray);
+}
+
+.identity__marquee {
+  margin-top: clamp(4rem, 10vh, 7rem);
+  border-top: 1px solid var(--color-blue-100);
+  border-bottom: 1px solid var(--color-blue-100);
+  padding: 1.25rem 0;
+  overflow: hidden;
+}
+
+.identity__marquee-track {
+  display: flex;
+  gap: 3rem;
+  width: max-content;
+  animation: identity-marquee 22s linear infinite;
+}
+
+.identity__marquee-item {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  font-weight: 500;
+  color: var(--color-gray);
+  white-space: nowrap;
+}
+
+@keyframes identity-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 860px) {
+  .identity__about {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identity__marquee-track {
+    animation: none;
+  }
+}

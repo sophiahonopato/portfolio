@@ -1,0 +1,102 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap");
+
+:root {
+  /* Cores */
+  --color-bg: #ffffff;
+  --color-bg-soft: #f7fafc;
+  --color-blue-50: #eaf7ff;
+  --color-blue-100: #bae6fd;
+  --color-blue-300: #7dd3fc;
+  --color-blue-500: #4db8f2;
+  --color-dark: #071522;
+  --color-gray: #718096;
+
+  /* Tipografia */
+  --font-display: "Space Grotesk", "Neue Montreal", sans-serif;
+  --font-body: "Manrope", "Inter", sans-serif;
+
+  /* Layout */
+  --container-padding: clamp(1.25rem, 5vw, 4rem);
+  --nav-height: 84px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis assume o smooth scroll */
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+body {
+  cursor: none; /* cursor customizado assume o controle em telas com mouse */
+}
+
+@media (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  background: none;
+  border: none;
+  cursor: none;
+}
+
+@media (pointer: coarse) {
+  button {
+    cursor: pointer;
+  }
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  width: 100%;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-blue-500);
+  margin: 0 0 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,158 @@
+.hero3d {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero3d-screen {
+  width: 344px;
+  padding: 20px 24px;
+  background: #071522;
+  border-radius: 6px;
+  font-family: "Space Grotesk", "JetBrains Mono", monospace;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #7dd3fc;
+  white-space: pre-wrap;
+  overflow: hidden;
+}
+
+.hero3d-screen__line {
+  margin: 0;
+  opacity: 0;
+  animation: hero3d-line-in 0.35s ease forwards;
+}
+
+.hero3d-screen__cursor {
+  display: inline-block;
+  width: 6px;
+  height: 10px;
+  background: #7dd3fc;
+  animation: hero3d-blink 1s step-end infinite;
+}
+
+@keyframes hero3d-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero3d-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero3d-screen__line {
+    animation: none;
+    opacity: 1;
+  }
+  .hero3d-screen__cursor {
+    animation: none;
+  }
+}
+.hero3d-identity {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 0 1.5rem;
+}
+
+.hero3d-identity__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #7DD3FC;
+  margin-bottom: 1.1rem;
+  opacity: 0;
+  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
+.hero3d-identity__name {
+  margin: 0;
+  font-size: clamp(2.6rem, 7vw, 4.6rem);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #F7FAFC;
+}
+
+.hero3d-identity__name span {
+  display: block;
+  opacity: 0;
+  animation: hero3dIdentityIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero3d-identity__name span:nth-child(1) { animation-delay: 0.22s; }
+.hero3d-identity__name span:nth-child(2) {
+  animation-delay: 0.34s;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #7DD3FC;
+}
+
+.hero3d-identity__meta {
+  margin-top: 1.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #718096;
+  opacity: 0;
+  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+@keyframes hero3dIdentityIn {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero3d-identity__eyebrow,
+  .hero3d-identity__name span,
+  .hero3d-identity__meta { animation: none; opacity: 1; transform: none; }
+}
+
+.hero3d-screen {
+  width: 400px;   /* ajuste até casar com a moldura do monitor */
+  box-sizing: border-box;
+}
+
+.hero3d-identity {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 0 32px;
+}
+
+.hero3d-identity__name {
+  margin: 0;
+  font-size: 59px;        /* era clamp(...vw...) */
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #F7FAFC;
+  white-space: nowrap;    /* garante que cada linha não quebre */
+}
+
+.hero3d-identity__eyebrow { font-size: 13px; letter-spacing: 0.4em; }
+.hero3d-identity__meta    { font-size: 12px; letter-spacing: 0.22em; }
