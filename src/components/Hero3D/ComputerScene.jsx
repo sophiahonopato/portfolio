@@ -4,12 +4,10 @@ import * as THREE from "three";
 import ComputerModel from "./ComputerModel";
 import Screen from "./Screen";
 
-// MUDOU: tamanho do computador quando a tela está em pé (1 = normal).
-// Menor = computador menor. Experimente 0.5 ~ 0.8.
+
 const PORTRAIT_SCALE = 0.8;
 
-// Estágios narrativos — cada um define rotação/posição alvo do computador
-// e qual conteúdo aparece na tela.
+
 export const STAGES = [
   { id: "start", from: 0, to: 0.15 },
   { id: "wake", from: 0.15, to: 0.32 },

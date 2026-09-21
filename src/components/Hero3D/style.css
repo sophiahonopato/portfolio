@@ -11,8 +11,17 @@
   height: 100% !important;
 }
 
+/* deixa a página rolar com o dedo por cima do canvas */
+.hero3d,
+.hero3d canvas {
+  touch-action: pan-y;
+}
+
+/* ---------- Tela do monitor ---------- */
+
 .hero3d-screen {
-  width: 344px;
+  width: 400px; /* ajuste até casar com a moldura do monitor */
+  box-sizing: border-box;
   padding: 20px 24px;
   background: #071522;
   border-radius: 6px;
@@ -60,80 +69,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero3d-screen__line {
-    animation: none;
-    opacity: 1;
-  }
-  .hero3d-screen__cursor {
-    animation: none;
-  }
-}
-.hero3d-identity {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  padding: 0 1.5rem;
-}
-
-.hero3d-identity__eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.42em;
-  text-transform: uppercase;
-  color: #7DD3FC;
-  margin-bottom: 1.1rem;
-  opacity: 0;
-  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
-}
-
-.hero3d-identity__name {
-  margin: 0;
-  font-size: clamp(2.6rem, 7vw, 4.6rem);
-  line-height: 0.88;
-  letter-spacing: -0.035em;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #F7FAFC;
-}
-
-.hero3d-identity__name span {
-  display: block;
-  opacity: 0;
-  animation: hero3dIdentityIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-.hero3d-identity__name span:nth-child(1) { animation-delay: 0.22s; }
-.hero3d-identity__name span:nth-child(2) {
-  animation-delay: 0.34s;
-  color: transparent;
-  -webkit-text-stroke: 1.5px #7DD3FC;
-}
-
-.hero3d-identity__meta {
-  margin-top: 1.4rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: #718096;
-  opacity: 0;
-  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
-}
-
-@keyframes hero3dIdentityIn {
-  from { opacity: 0; transform: translateY(0.6em); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero3d-identity__eyebrow,
-  .hero3d-identity__name span,
-  .hero3d-identity__meta { animation: none; opacity: 1; transform: none; }
-}
-
-.hero3d-screen {
-  width: 400px;   /* ajuste até casar com a moldura do monitor */
-  box-sizing: border-box;
-}
+/* ---------- Identidade (estágio "start") ---------- */
 
 .hero3d-identity {
   display: flex;
@@ -143,16 +79,103 @@
   padding: 0 32px;
 }
 
+.hero3d-identity__eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+  margin-bottom: 1.1rem;
+  opacity: 0;
+  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
 .hero3d-identity__name {
   margin: 0;
-  font-size: 59px;        /* era clamp(...vw...) */
+  font-size: 59px;
   line-height: 0.86;
   letter-spacing: -0.045em;
   font-weight: 600;
   text-transform: uppercase;
-  color: #F7FAFC;
-  white-space: nowrap;    /* garante que cada linha não quebre */
+  color: #f7fafc;
+  white-space: nowrap; /* garante que cada linha não quebre */
 }
 
-.hero3d-identity__eyebrow { font-size: 13px; letter-spacing: 0.4em; }
-.hero3d-identity__meta    { font-size: 12px; letter-spacing: 0.22em; }
+.hero3d-identity__name span {
+  display: block;
+  opacity: 0;
+  animation: hero3dIdentityIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero3d-identity__name span:nth-child(1) {
+  animation-delay: 0.22s;
+}
+
+.hero3d-identity__name span:nth-child(2) {
+  animation-delay: 0.34s;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #7dd3fc;
+}
+
+.hero3d-identity__meta {
+  margin-top: 1.4rem;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #718096;
+  opacity: 0;
+  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+@keyframes hero3dIdentityIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Celular em pé ---------- */
+/* a tela aparece menor, então compensa no texto */
+
+.hero3d-screen--portrait {
+  font-size: 18px;
+}
+
+.hero3d-screen--portrait .hero3d-identity__eyebrow {
+  font-size: 15px;
+  letter-spacing: 0.3em;
+}
+
+.hero3d-screen--portrait .hero3d-identity__meta {
+  font-size: 14px;
+  letter-spacing: 0.1em;
+}
+
+/* o contorno de 1.5px vira um fio quando a tela é reduzida */
+.hero3d-screen--portrait .hero3d-identity__name span:nth-child(2) {
+  -webkit-text-stroke: 2.5px #7dd3fc;
+}
+
+/* ---------- Movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero3d-screen__line {
+    animation: none;
+    opacity: 1;
+  }
+
+  .hero3d-screen__cursor {
+    animation: none;
+  }
+
+  .hero3d-identity__eyebrow,
+  .hero3d-identity__name span,
+  .hero3d-identity__meta {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
