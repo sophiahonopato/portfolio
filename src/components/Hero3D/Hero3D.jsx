@@ -120,8 +120,14 @@ function Atmosphere({ bootRef, isMobile }) {
   const rimBlue = useRef();
   const rimViolet = useRef();
 
-  useFrame(() => {
+  useFrame(({ camera, scene }) => {
     const boot = bootRef.current.v;
+
+    // a neblina começa sempre depois do setup, por mais longe que a câmera esteja
+    const distance = camera.position.length();
+    scene.fog.near = Math.max(7, distance + 2.5);
+    scene.fog.far = scene.fog.near + 12;
+
     ambient.current.intensity = 0.25 * (0.25 + 0.75 * boot);
     key.current.intensity = 0.9 * boot;
     rimBlue.current.intensity = 26 * boot;

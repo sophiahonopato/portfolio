@@ -256,3 +256,58 @@
   .hero__tag--3 { bottom: 16%; right: 6%; }
   .hero__tag--4 { display: none; }
 }
+/* ---------- Título em HTML: só em telas em pé ---------- */
+
+.hero__title {
+  display: none;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .hero__title {
+    position: absolute;
+    z-index: 2;
+    top: calc(var(--nav-height) + 6svh);
+    left: var(--container-padding);
+    right: var(--container-padding);
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .hero__title.is-hidden {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+
+  .hero__title-eyebrow {
+    font-family: var(--font-mono);
+    font-size: clamp(0.65rem, 2.6vw, 0.9rem);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent-hot);
+    text-shadow: var(--glow-text);
+    margin-bottom: 0.8rem;
+  }
+
+  .hero__title-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.6rem, 15.5vw, 7rem);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .hero__title-name--outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--accent-hot);
+    filter: drop-shadow(0 0 14px rgba(77, 184, 242, 0.55));
+  }
+
+  /* as tags flutuantes disputariam espaço com o título */
+  .hero__tags {
+    display: none;
+  }
+}

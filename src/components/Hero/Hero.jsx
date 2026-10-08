@@ -92,6 +92,7 @@ export default function Hero() {
         stagger: 0.09,
         delay: 2.3,
       });
+      gsap.from(".hero__title > *", { opacity: 0, y: 28, duration: 0.9, ease: "power3.out", stagger: 0.12, delay: 1.6 });
       gsap.from(".hero__hud, .hero__scroll-hint", { opacity: 0, y: 16, duration: 0.8, ease: "power3.out", delay: 2.8 });
     }, sectionRef);
     return () => ctx.revert();
@@ -140,6 +141,14 @@ export default function Hero() {
         </div>
 
         <h1 className="sr-only">Sophia Honorato — Creative Developer</h1>
+
+        {/* Em telas em pé o setup aparece inteiro e o monitor fica pequeno:
+            o nome ganha uma versão grande em HTML por cima (só no CSS de retrato). */}
+        <div className={`hero__title ${introVisible ? "" : "is-hidden"}`} aria-hidden="true">
+          <span className="hero__title-eyebrow">Creative Developer</span>
+          <span className="hero__title-name">Sophia</span>
+          <span className="hero__title-name hero__title-name--outline">Honorato</span>
+        </div>
 
         <div className={`hero__tags ${introVisible ? "" : "is-hidden"}`} aria-hidden="true">
           {FLOATING_TAGS.map((tag, i) => (
