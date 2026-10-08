@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Sparkles, Environment, Grid } from "@react-three/drei";
+import { Sparkles, Environment, Lightformer, Grid } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import gsap from "gsap";
 import ComputerScene from "./ComputerScene";
@@ -135,7 +135,16 @@ function Atmosphere({ bootRef, isMobile }) {
       <fog attach="fog" args={[NIGHT, isMobile ? 12 : 7, isMobile ? 30 : 18]} />
 
       <ambientLight ref={ambient} intensity={0} color="#BAE6FD" />
-      <Environment preset="city" background={false} environmentIntensity={0.3} />
+      {/* Reflexos de estúdio gerados aqui mesmo, sem baixar HDR de CDN externo:
+          com um preset, a cena inteira ficava presa no "loading" enquanto (ou se)
+          o arquivo remoto não chegasse. */}
+      <Environment resolution={128} frames={1} background={false} environmentIntensity={0.55}>
+        <color attach="background" args={["#04080D"]} />
+        <Lightformer form="rect" intensity={2.2} color="#EAF7FF" position={[0, 5, 2]} rotation-x={Math.PI / 2} scale={[9, 3, 1]} />
+        <Lightformer form="rect" intensity={3} color="#4DB8F2" position={[-6, 1, 2]} rotation-y={Math.PI / 2} scale={[6, 2, 1]} />
+        <Lightformer form="rect" intensity={3} color="#8B7CFF" position={[6, 1, -2]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
+        <Lightformer form="rect" intensity={1.2} color="#ffffff" position={[0, 1.5, 8]} rotation-y={Math.PI} scale={[7, 2, 1]} />
+      </Environment>
 
       <directionalLight ref={key} position={[2, 5, 4]} intensity={0} color="#EAF7FF" />
       {/* luzes de recorte: separam o setup escuro do fundo escuro */}
