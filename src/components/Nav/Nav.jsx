@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMagnetic } from "../../hooks/useMagnetic";
+import { lockScroll, scrollToTarget } from "../../lib/scroll";
 import "./style.css";
 
 const LINKS = [
@@ -10,7 +11,7 @@ const LINKS = [
 ];
 
 export default function Nav() {
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuBtnRef = useMagnetic(0.3);
 
@@ -19,7 +20,9 @@ export default function Nav() {
       const doc = document.documentElement;
       const scrollTop = window.scrollY || doc.scrollTop;
       const height = doc.scrollHeight - doc.clientHeight;
-      setProgress(height > 0 ? scrollTop / height : 0);
+      const progress = height > 0 ? scrollTop / height : 0;
+      // direto no DOM: evita re-renderizar o Nav a cada frame de scroll
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${progress})`;
     }
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
@@ -27,31 +30,48 @@ export default function Nav() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
+    lockScroll(menuOpen);
+    if (!menuOpen) return;
+
+    function handleKeyDown(e) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [menuOpen]);
 
-  function handleLinkClick(href) {
+  function handleLinkClick(e, href) {
+    e.preventDefault();
     setMenuOpen(false);
-    const el = document.querySelector(href);
-    el?.scrollIntoView({ behavior: "smooth" });
+    lockScroll(false); // destrava antes de rolar (o efeito acima só roda no próximo render)
+    scrollToTarget(href);
   }
 
   return (
     <>
+      {/* fora do <header>: o mix-blend-mode de lá inverteria a cor da barra */}
+      <div className="nav__progress" aria-hidden="true">
+        <div className="nav__progress-fill" ref={progressRef} />
+      </div>
+
       <header className="nav">
-        <a href="#hero" className="nav__logo" data-cursor="TOP">
+        <a
+          href="#hero"
+          className="nav__logo"
+          data-cursor="TOP"
+          aria-label="Sophia Honorato — voltar ao topo"
+          onClick={(e) => handleLinkClick(e, 0)}
+        >
           SH.
         </a>
-
-        <div className="nav__progress" aria-hidden="true">
-          <div className="nav__progress-fill" style={{ transform: `scaleX(${progress})` }} />
-        </div>
 
         <button
           ref={menuBtnRef}
           className={`nav__menu-btn ${menuOpen ? "is-open" : ""}`}
           onClick={() => setMenuOpen((v) => !v)}
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={menuOpen}
+          aria-controls="nav-overlay"
           data-cursor={menuOpen ? "CLOSE" : "MENU"}
         >
           <span />
@@ -59,18 +79,19 @@ export default function Nav() {
         </button>
       </header>
 
-      <div className={`nav__overlay ${menuOpen ? "is-open" : ""}`}>
-        <nav className="nav__overlay-links">
+      <div id="nav-overlay" className={`nav__overlay ${menuOpen ? "is-open" : ""}`} inert={menuOpen ? undefined : ""}>
+        <nav className="nav__overlay-links" aria-label="Seções">
           {LINKS.map((link, i) => (
-            <button
+            <a
               key={link.href}
+              href={link.href}
               className="nav__overlay-link"
               style={{ transitionDelay: `${i * 60}ms` }}
-              onClick={() => handleLinkClick(link.href)}
+              onClick={(e) => handleLinkClick(e, link.href)}
               data-cursor="GO"
             >
               {link.label}
-            </button>
+            </a>
           ))}
         </nav>
         <div className="nav__overlay-footer">

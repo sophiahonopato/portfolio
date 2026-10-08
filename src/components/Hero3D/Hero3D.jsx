@@ -1,10 +1,14 @@
-import { Suspense, useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Sparkles, Environment, ContactShadows, SoftShadows } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Sparkles, Environment, Grid } from "@react-three/drei";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import gsap from "gsap";
 import ComputerScene from "./ComputerScene";
 import CameraController from "./CameraController";
 import "./style.css";
+
+// mesma cor de --bg no index.css: o hero emenda no resto da página sem costura
+const NIGHT = "#050D16";
 
 export default function Hero3D({
   progressRef,
@@ -13,42 +17,52 @@ export default function Hero3D({
   prefersReducedMotion = false,
   modelUrl = null,
 }) {
-  // MUDOU: no mobile usa até 1.5 (antes era 1 fixo)
-  const dpr = useMemo(() => {
-    if (typeof window === "undefined") return 1;
-    const max = isMobile ? 1.5 : 2;
-    return Math.min(window.devicePixelRatio || 1, max);
-  }, [isMobile]);
-
   const highQuality = !isMobile && !prefersReducedMotion;
 
+  const dpr = useMemo(() => {
+    if (typeof window === "undefined") return 1;
+    return Math.min(window.devicePixelRatio || 1, 1.5);
+  }, []);
+
+  // Sequência de boot: 0 → 1 uma única vez ao montar. Câmera, luzes, teclado
+  // e tela leem esse valor a cada frame (sem re-render do React).
+  const bootRef = useRef({ v: 0 });
+  useEffect(() => {
+    const tween = gsap.to(bootRef.current, { v: 1, duration: 2.8, ease: "power2.inOut", delay: 0.2 });
+    return () => tween.kill();
+  }, []);
+
+  // Pausa o render do WebGL quando o hero sai da tela: o resto da página
+  // rola sem a cena 3D consumindo GPU/bateria em segundo plano.
+  const wrapRef = useRef(null);
+  const [inView, setInView] = useState(true);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+
+    // margem: volta a renderizar um pouco antes de o hero reaparecer
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      rootMargin: "25% 0px",
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="hero3d">
+    <div className="hero3d" ref={wrapRef}>
       <Canvas
+        frameloop={inView ? "always" : "never"}
         dpr={dpr}
-        shadows={highQuality}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }} // MUDOU: antialias sempre ligado
+        gl={{ antialias: true, powerPreference: "high-performance" }}
         camera={{ position: [0, 0.4, 6], fov: 35, near: 0.1, far: 100 }}
       >
-        <color attach="background" args={["#F7FAFC"]} />
-        {/* MUDOU: no mobile a câmera fica mais longe, então a neblina começa mais atrás */}
-        <fog attach="fog" args={["#F7FAFC", isMobile ? 14 : 8, isMobile ? 30 : 16]} />
-
-        {highQuality && <SoftShadows size={18} samples={12} focus={0.6} />}
-
-        {/* Luz ambiente + reflexos de estúdio para dar profundidade e brilho ao metal/vidro */}
-        <ambientLight intensity={0.4} color="#EAF7FF" />
-        <Environment preset="city" background={false} environmentIntensity={highQuality ? 0.6 : 0.35} />
-
-        <pointLight position={[3, 4, 4]} intensity={1.1} color="#BAE6FD" castShadow={highQuality} />
-        <pointLight position={[-4, 1.5, 2]} intensity={0.5} color="#4DB8F2" />
-        {/* Luz de recorte (rim light) para separar o computador do fundo */}
-        <pointLight position={[-2, 2.5, -3]} intensity={0.8} color="#ffffff" />
-        <directionalLight position={[0, 6, 3]} intensity={0.4} color="#ffffff" castShadow={highQuality} />
+        <Atmosphere bootRef={bootRef} isMobile={isMobile} />
 
         <CameraController
           progressRef={progressRef}
           mouseRef={mouseRef}
+          bootRef={bootRef}
           prefersReducedMotion={prefersReducedMotion}
         />
 
@@ -56,40 +70,77 @@ export default function Hero3D({
           <ComputerScene
             progressRef={progressRef}
             mouseRef={mouseRef}
+            bootRef={bootRef}
             isMobile={isMobile}
             prefersReducedMotion={prefersReducedMotion}
             modelUrl={modelUrl}
           />
         </Suspense>
 
-        {highQuality && (
-          <ContactShadows
-            position={[0, -1.16, 0]}
-            opacity={0.45}
-            scale={8}
-            blur={2.4}
-            far={2}
-            color="#071522"
+        {/* Piso em grid: dá chão e profundidade à plataforma flutuante */}
+        <Grid
+          position={[0, -1.35, 0]}
+          infiniteGrid
+          cellSize={0.45}
+          cellThickness={0.6}
+          cellColor="#123049"
+          sectionSize={2.25}
+          sectionThickness={1.1}
+          sectionColor="#2C86B8"
+          fadeDistance={isMobile ? 22 : 16}
+          fadeStrength={2.5}
+        />
+
+        {!prefersReducedMotion && (
+          <Sparkles
+            count={isMobile ? 30 : 80}
+            scale={[7, 3.5, 5]}
+            position={[0, 0.3, 0]}
+            size={isMobile ? 1.6 : 2.2}
+            speed={0.25}
+            color="#7DD3FC"
+            opacity={0.7}
           />
         )}
 
-        {!isMobile && !prefersReducedMotion && (
-          <Sparkles count={40} scale={[6, 3, 4]} size={1.4} speed={0.15} color="#7DD3FC" opacity={0.35} />
-        )}
-
         {highQuality && (
-          <EffectComposer multisampling={0}>
-            <Bloom
-              intensity={0.35}
-              luminanceThreshold={0.65}
-              luminanceSmoothing={0.15}
-              mipmapBlur
-              radius={0.5}
-            />
-            <Vignette eskil={false} offset={0.15} darkness={0.5} />
+          <EffectComposer multisampling={4}>
+            <Bloom intensity={1} luminanceThreshold={0.42} luminanceSmoothing={0.25} mipmapBlur radius={0.75} />
           </EffectComposer>
         )}
       </Canvas>
     </div>
+  );
+}
+
+/* Fundo, neblina e luzes. As luzes acendem junto com o boot. */
+function Atmosphere({ bootRef, isMobile }) {
+  const ambient = useRef();
+  const key = useRef();
+  const rimBlue = useRef();
+  const rimViolet = useRef();
+
+  useFrame(() => {
+    const boot = bootRef.current.v;
+    ambient.current.intensity = 0.25 * (0.25 + 0.75 * boot);
+    key.current.intensity = 0.9 * boot;
+    rimBlue.current.intensity = 26 * boot;
+    rimViolet.current.intensity = 18 * boot;
+  });
+
+  return (
+    <>
+      <color attach="background" args={[NIGHT]} />
+      {/* no mobile a câmera fica mais longe, então a neblina começa mais atrás */}
+      <fog attach="fog" args={[NIGHT, isMobile ? 12 : 7, isMobile ? 30 : 18]} />
+
+      <ambientLight ref={ambient} intensity={0} color="#BAE6FD" />
+      <Environment preset="city" background={false} environmentIntensity={0.3} />
+
+      <directionalLight ref={key} position={[2, 5, 4]} intensity={0} color="#EAF7FF" />
+      {/* luzes de recorte: separam o setup escuro do fundo escuro */}
+      <pointLight ref={rimBlue} position={[-3.2, 1.6, -1.8]} intensity={0} color="#4DB8F2" distance={9} decay={1.8} />
+      <pointLight ref={rimViolet} position={[3.4, 1.2, -2.2]} intensity={0} color="#8B7CFF" distance={9} decay={1.8} />
+    </>
   );
 }

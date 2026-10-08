@@ -21,18 +21,20 @@
 }
 
 .nav__progress {
-  position: absolute;
-  bottom: 0;
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 2px;
+  z-index: 101;
+  pointer-events: none;
 }
 
 .nav__progress-fill {
   height: 100%;
   width: 100%;
-  background: var(--color-blue-300);
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+  box-shadow: var(--glow);
   transform-origin: left;
   transform: scaleX(0);
 }
@@ -40,7 +42,8 @@
 .nav__menu-btn {
   position: relative;
   width: 40px;
-  height: 24px;
+  height: 44px; /* área de toque confortável */
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -67,7 +70,10 @@
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: var(--color-dark);
+  background:
+    radial-gradient(60% 50% at 80% 20%, rgba(139, 124, 255, 0.16), transparent 70%),
+    radial-gradient(50% 50% at 10% 90%, rgba(77, 184, 242, 0.16), transparent 70%),
+    var(--bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -92,20 +98,24 @@
   font-family: var(--font-display);
   font-size: clamp(2.2rem, 8vw, 5rem);
   font-weight: 600;
-  color: var(--color-blue-100);
+  color: var(--text);
   text-align: left;
+  width: fit-content;
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.5s ease, transform 0.5s ease, color 0.25s ease;
+  transform: perspective(700px) translateY(30px) rotateX(-70deg);
+  transform-origin: left bottom;
+  transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
 }
 
 .nav__overlay.is-open .nav__overlay-link {
   opacity: 1;
-  transform: translateY(0);
+  transform: perspective(700px) translateY(0) rotateX(0deg);
 }
 
 .nav__overlay-link:hover {
-  color: var(--color-blue-300);
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent-hot);
+  text-shadow: 0 0 26px rgba(77, 184, 242, 0.55);
 }
 
 .nav__overlay-footer {
@@ -115,11 +125,11 @@
   right: var(--container-padding);
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-gray);
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -3,23 +3,27 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 // Keyframes de câmera por estágio do scroll (progress 0 → 1)
-// p: progresso | pos: posição da câmera | look: alvo do lookAt
-// fit: largura (em unidades do mundo) que PRECISA caber na tela em retrato.
-//      Só é usada quando aspect < 1 (celular em pé).
+// p:    progresso
+// look: ponto para onde a câmera olha
+// dir:  direção alvo → câmera (só o ângulo importa; a distância é calculada)
+// fitW: largura (unidades do mundo) que PRECISA caber na tela — é o que manda no celular em pé
+// fitH: altura que PRECISA caber na tela — é o que manda no desktop
+//
+// A distância sai do enquadramento, não de um valor fixo: assim o monitor
+// ocupa a mesma proporção da tela em qualquer formato (celular, tablet, ultrawide).
+// Nos estágios com texto, o ângulo fica abaixo de ~30° do eixo do monitor para a tela continuar legível.
 const CAMERA_PATH = [
-  { p: 0.0, pos: [0, 0.4, 6], look: [0, 0.2, 0], fit: 3.6 }, // START (mesa inteira)
-  { p: 0.18, pos: [0.4, 0.6, 5], look: [0, 0.2, 0], fit: 3.6 }, // ACORDANDO
-  { p: 0.4, pos: [2.2, 0.9, 3.4], look: [0, 0.1, 0], fit: 3.9 }, // ORBITA (mesa girando ocupa mais)
-  { p: 0.62, pos: [0.3, 0.35, 1.6], look: [0, 0.28, 0.2], fit: 2.0 }, // MONITOR/CÓDIGO (só o monitor)
-  { p: 1.0, pos: [-2.4, 0.7, 4.6], look: [0.6, 0.1, 0], fit: 3.6 }, // PROJECTS
+  { p: 0.0, look: [0, 0.2, 0], dir: [0, 0.06, 1], fitW: 2.15, fitH: 1.95 }, // START (monitor em destaque)
+  { p: 0.18, look: [0, 0.0, 0.25], dir: [0.14, 0.22, 1], fitW: 2.6, fitH: 2.25 }, // BOOT (revela o setup)
+  { p: 0.38, look: [-0.1, 0.0, 0.2], dir: [0.56, 0.3, 0.9], fitW: 2.9, fitH: 2.4 }, // ORBITA
+  { p: 0.5, look: [0.1, -0.52, 0.6], dir: [0.25, 0.75, 1], fitW: 1.5, fitH: 1.05 }, // rasante no teclado
+  { p: 0.62, look: [0, 0.25, 0], dir: [0.06, 0.05, 1], fitW: 2.0, fitH: 1.5 }, // CÓDIGO (close no monitor)
+  { p: 0.82, look: [-0.25, 0.2, 0], dir: [-0.4, 0.1, 1], fitW: 2.3, fitH: 1.75 }, // WHOAMI (gabinete entra em cena)
+  { p: 1.0, look: [0.1, 0.0, 0.2], dir: [-0.3, 0.26, 1], fitW: 3.0, fitH: 2.3 }, // PROJECTS
 ];
 
-// FOV base e distância de referência usadas para o dolly-zoom no desktop
-const BASE_FOV = 35;
-const BASE_DISTANCE = CAMERA_PATH[0].pos[2];
-
-// Em retrato usamos um FOV fixo e mais aberto (sem dolly-zoom):
-// o que decide o tamanho do objeto passa a ser a largura da tela.
+const LANDSCAPE_FOV = 35;
+// Em retrato a largura é o limite, então um FOV mais aberto evita a câmera ir longe demais
 const PORTRAIT_FOV = 50;
 
 function sampleCameraPath(t) {
@@ -47,88 +51,65 @@ function sampleCameraPath(t) {
   ];
 
   return {
-    pos: lerp3(a.pos, b.pos),
     look: lerp3(a.look, b.look),
-    fit: THREE.MathUtils.lerp(a.fit, b.fit, eased),
+    dir: lerp3(a.dir, b.dir),
+    fitW: THREE.MathUtils.lerp(a.fitW, b.fitW, eased),
+    fitH: THREE.MathUtils.lerp(a.fitH, b.fitH, eased),
   };
 }
 
-// FOV que mantém o tamanho aparente do objeto ~constante (dolly-zoom) — desktop
-function computeCompensatedFov(distance) {
-  const baseHalfFovRad = THREE.MathUtils.degToRad(BASE_FOV / 2);
-  const newHalfFovRad = Math.atan(
-    (Math.tan(baseHalfFovRad) * BASE_DISTANCE) / Math.max(distance, 0.1)
-  );
-  const newFovDeg = THREE.MathUtils.radToDeg(newHalfFovRad) * 2;
-  return THREE.MathUtils.clamp(newFovDeg, 18, 65);
-}
-
-export default function CameraController({ progressRef, mouseRef, prefersReducedMotion }) {
+export default function CameraController({ progressRef, mouseRef, bootRef, prefersReducedMotion }) {
   const { camera } = useThree();
   const targetPos = useRef(new THREE.Vector3(0, 0.4, 6));
   const targetLook = useRef(new THREE.Vector3(0, 0.2, 0));
   const currentLook = useRef(new THREE.Vector3(0, 0.2, 0));
-  const currentFov = useRef(BASE_FOV);
   const offset = useRef(new THREE.Vector3());
+  const initialized = useRef(false);
 
   useFrame((state, delta) => {
     const progress = progressRef?.current ?? 0;
     const mouse = mouseRef?.current ?? { x: 0, y: 0 };
-    const { pos, look, fit } = sampleCameraPath(progress);
+    const boot = bootRef?.current?.v ?? 1;
+    const t = state.clock.elapsedTime;
+    const { look, dir, fitW, fitH } = sampleCameraPath(progress);
 
     const aspect = state.size.width / state.size.height;
-    const isPortrait = aspect < 1;
+    const targetFov = aspect < 1 ? PORTRAIT_FOV : LANDSCAPE_FOV;
 
+    // distância mínima para fitW × fitH caberem na tela:
+    //   altura visível  = 2 * d * tan(fov/2)
+    //   largura visível = altura visível * aspect
+    const halfTan = Math.tan(THREE.MathUtils.degToRad(targetFov / 2));
+    const distance = Math.max(fitH / (2 * halfTan), fitW / (2 * halfTan * aspect));
+
+    // Boot: a câmera nasce afastada, baixa e de lado, e "pousa" no enquadramento
+    const intro = 1 - boot;
+    offset.current
+      .set(dir[0] + intro * 0.55, dir[1] - intro * 0.12, dir[2])
+      .normalize()
+      .multiplyScalar(distance * (1 + intro * 0.7));
+
+    // parallax do mouse (o mouseRef fica zerado em touch) + respiração lenta
     const mouseInfluence = prefersReducedMotion ? 0 : 0.35;
+    const drift = prefersReducedMotion ? 0 : 0.035;
+    targetPos.current.set(
+      look[0] + offset.current.x + mouse.x * mouseInfluence + Math.sin(t * 0.45) * drift,
+      look[1] + offset.current.y + mouse.y * (mouseInfluence * 0.5) + Math.cos(t * 0.6) * drift,
+      look[2] + offset.current.z
+    );
+    targetLook.current.set(look[0] + mouse.x * mouseInfluence * 0.4, look[1], look[2]);
 
-    let targetFov;
+    // primeiro frame: já nasce enquadrado, sem "voar" da posição padrão
+    const damp = initialized.current ? 1 - Math.pow(0.001, delta) : 1;
+    initialized.current = true;
 
-    if (isPortrait) {
-      // 1) mantém o objeto centralizado (sem o deslocamento lateral do desktop)
-      const lookX = 0;
-
-      // 2) direção câmera → alvo, preservando o "ângulo" de cada keyframe
-      offset.current.set(pos[0] - lookX, pos[1] - look[1], pos[2] - look[2]);
-      const pathDistance = offset.current.length();
-
-      // 3) distância mínima para a largura `fit` caber na tela:
-      //    largura visível = 2 * d * tan(fov/2) * aspect
-      const halfTan = Math.tan(THREE.MathUtils.degToRad(PORTRAIT_FOV / 2));
-      const fitDistance = fit / (2 * halfTan * aspect);
-
-      offset.current.normalize().multiplyScalar(Math.max(pathDistance, fitDistance));
-
-      targetPos.current.set(
-        lookX + offset.current.x,
-        look[1] + offset.current.y,
-        look[2] + offset.current.z
-      );
-      targetLook.current.set(lookX, look[1], look[2]);
-      targetFov = PORTRAIT_FOV;
-    } else {
-      targetPos.current.set(
-        pos[0] + mouse.x * mouseInfluence,
-        pos[1] + mouse.y * (mouseInfluence * 0.5),
-        pos[2]
-      );
-      targetLook.current.set(look[0] + mouse.x * mouseInfluence * 0.4, look[1], look[2]);
-      targetFov = null; // calculado depois, com a distância real
-    }
-
-    // damping independente de frame-rate
-    const damp = 1 - Math.pow(0.001, delta);
     camera.position.lerp(targetPos.current, damp);
     currentLook.current.lerp(targetLook.current, damp);
     camera.lookAt(currentLook.current);
 
-    if (targetFov === null) {
-      const distance = camera.position.distanceTo(currentLook.current);
-      targetFov = computeCompensatedFov(distance);
-    }
-    currentFov.current = THREE.MathUtils.lerp(currentFov.current, targetFov, damp);
-
-    if (Math.abs(camera.fov - currentFov.current) > 0.001) {
-      camera.fov = currentFov.current;
+    const nextFov = THREE.MathUtils.lerp(camera.fov, targetFov, damp);
+    if (Math.abs(camera.fov - nextFov) > 0.001) {
+      camera.fov = nextFov;
       camera.updateProjectionMatrix();
     }
   });

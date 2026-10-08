@@ -1,85 +1,246 @@
 .journey {
   position: relative;
   z-index: 2;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--color-bg-soft);
-  padding-top: clamp(6rem, 14vh, 9rem); /* respiro para o header fixo */
+}
+
+.journey__sticky {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
   overflow: hidden;
 }
 
+/* a cena 3D (e os cards posicionados nela) ocupa a seção inteira */
+.journey__canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 
+.journey__canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
 
-.journey__intro {
-  margin-bottom: clamp(2.5rem, 6vh, 4rem);
+.journey__content {
+  position: relative;
+  z-index: 6; /* acima dos cards do <Html> */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: calc(var(--nav-height) + 1.5rem);
+  padding-bottom: clamp(1.5rem, 5vh, 3rem);
+  pointer-events: none; /* só os botões capturam o mouse */
 }
 
 .journey__title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(2.4rem, 7vw, 5rem);
+  font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+  line-height: 1.1;
   margin: 0;
-  color: var(--color-dark);
+  color: var(--text);
 }
 
-.journey__track {
-  display: flex;
-  gap: clamp(1.5rem, 3vw, 3rem);
-  padding: 0 var(--container-padding) clamp(4rem, 10vh, 7rem);
-  width: max-content;
-}
+/* ---------- card de cada capítulo (vive dentro do portal 3D) ---------- */
 
-.journey__card {
-  width: min(360px, 78vw);
-  flex-shrink: 0;
-  background: #fff;
-  border: 1px solid var(--color-blue-100);
-  border-radius: 6px;
-  padding: 2rem;
+.journey-card {
+  position: relative;
+  box-sizing: border-box;
+  width: 400px;
+  padding: 26px 28px 30px;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 10px;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(19, 41, 61, 0.92), rgba(6, 14, 23, 0.95));
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  box-shadow: 0 0 60px -12px rgba(77, 184, 242, 0.7), inset 0 0 40px -24px rgba(139, 124, 255, 0.9);
+  will-change: opacity;
 }
 
-.journey__year {
+/* barra de LED em cima */
+.journey-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+  box-shadow: var(--glow);
+}
+
+/* scanlines, como na tela do PC */
+.journey-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+
+.journey-card > * {
+  position: relative;
+}
+
+.journey-card__index {
+  position: absolute;
+  right: 6px;
+  bottom: -22px;
   font-family: var(--font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  color: var(--color-blue-500);
+  font-weight: 700;
+  font-size: 120px;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(125, 211, 252, 0.18);
 }
 
-.journey__card-title {
+.journey-card__chapter {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.journey-card__year {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 46px;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--accent-hot);
+  filter: drop-shadow(0 0 10px rgba(77, 184, 242, 0.6));
+}
+
+.journey-card__title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.3rem;
-  margin: 0;
-  color: var(--color-dark);
+  font-size: 22px;
+  line-height: 1.2;
+  margin: 4px 0 0;
+  color: var(--text);
 }
 
-.journey__card-text {
+.journey-card__text {
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 15px;
   line-height: 1.55;
-  color: var(--color-gray);
+  color: var(--text-soft);
   margin: 0;
+}
+
+/* ---------- linha do tempo (navegação) ---------- */
+
+.journey__nav {
+  pointer-events: auto;
+}
+
+.journey__bar {
+  height: 1px;
+  background: var(--line);
+}
+
+.journey__bar span {
+  display: block;
+  height: 3px;
+  margin-top: -1px;
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+  box-shadow: var(--glow);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.journey__nav ul {
+  display: flex;
+  justify-content: space-between;
+}
+
+.journey__nav button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 44px;
+  padding: 0.9rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* o primeiro e o último ficam alinhados às pontas da barra */
+.journey__nav li:first-child button {
+  align-items: flex-start;
+}
+
+.journey__nav li:last-child button {
+  align-items: flex-end;
+}
+
+/* marcador sobre a barra */
+.journey__nav button i {
+  position: absolute;
+  top: -5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  transition: background 0.3s ease, box-shadow 0.3s ease, scale 0.3s ease;
+}
+
+.journey__nav button em {
+  font-style: normal;
+  font-size: 0.62rem;
+  opacity: 0.7;
+}
+
+.journey__nav button.is-done i {
+  background: var(--accent);
+}
+
+.journey__nav button:hover,
+.journey__nav button.is-active {
+  color: var(--accent-hot);
+  text-shadow: var(--glow-text);
+}
+
+.journey__nav button.is-active i {
+  background: var(--accent-hot);
+  box-shadow: 0 0 14px var(--accent);
+  scale: 1.5;
+}
+
+/* ---------- versão estática (movimento reduzido) ---------- */
+
+.journey--static {
+  padding: clamp(6rem, 14vh, 10rem) 0;
+}
+
+.journey--static .journey__title {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  margin-bottom: 3rem;
+}
+
+.journey__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.journey--static .journey-card {
+  width: 100%;
 }
 
 @media (max-width: 860px) {
-  .journey__track {
-    flex-direction: column;
-    width: 100%;
-    padding-bottom: 2rem;
-  }
-   .journey {
-    min-height: auto;
-    display: block;
-  }
-
-  .journey__card {
-    width: 100%;
+  .journey__content {
+    padding-top: calc(var(--nav-height) + 0.5rem);
   }
 }
-
-

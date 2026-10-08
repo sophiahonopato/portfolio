@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { STAGES, getStage } from "../Hero3D/stages";
 import "./style.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -8,15 +9,6 @@ gsap.registerPlugin(ScrollTrigger);
 const Hero3D = lazy(() => import("../Hero3D/Hero3D"));
 
 const FLOATING_TAGS = ["React", "JavaScript", "IoT", "Web", "GSAP"];
-
-const HEADINGS = {
-  start: null,
-  wake: null,
-  orbit: null,
-  code: null,
-  whoami: null,
-  projects: null,
-};
 
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(() =>
@@ -53,9 +45,12 @@ export default function Hero() {
   const progressRef = useRef(0);
   const mouseRef = useRef({ x: 0, y: 0 });
 
-  const [heading, setHeading] = useState(null);
+  // tags flutuantes e "scroll" só fazem sentido na abertura
   const [introVisible, setIntroVisible] = useState(true);
-  const lastStageRef = useRef("start");
+  // HUD: estágio atual da narrativa do scroll
+  const [stageIndex, setStageIndex] = useState(0);
+  const hudBarRef = useRef(null);
+  const hudLabelRef = useRef(null);
 
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -74,19 +69,44 @@ export default function Hero() {
         onUpdate: (self) => {
           progressRef.current = self.progress;
 
-          setIntroVisible(self.progress < 0.08);
-
-          const stageId = resolveStageId(self.progress);
-          if (stageId !== lastStageRef.current) {
-            lastStageRef.current = stageId;
-            setHeading(HEADINGS[stageId] ?? null);
-          }
+          setIntroVisible(self.progress < 0.06);
+          setStageIndex(STAGES.indexOf(getStage(self.progress)));
+          if (hudBarRef.current) hudBarRef.current.style.transform = `scaleY(${self.progress})`;
         },
       });
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
+
+  // Entrada das tags e do HUD, sincronizada com o boot do PC
+  useLayoutEffect(() => {
+    if (prefersReducedMotion) return;
+    const ctx = gsap.context(() => {
+      gsap.from(".hero__tag-wrap", {
+        opacity: 0,
+        scale: 0.6,
+        y: 24,
+        duration: 0.9,
+        ease: "back.out(1.8)",
+        stagger: 0.09,
+        delay: 2.3,
+      });
+      gsap.from(".hero__hud, .hero__scroll-hint", { opacity: 0, y: 16, duration: 0.8, ease: "power3.out", delay: 2.8 });
+    }, sectionRef);
+    return () => ctx.revert();
+  }, [prefersReducedMotion]);
+
+  // troca do rótulo do HUD: o texto novo sobe por baixo da máscara
+  useLayoutEffect(() => {
+    if (prefersReducedMotion || !hudLabelRef.current) return;
+    const tween = gsap.fromTo(
+      hudLabelRef.current,
+      { yPercent: 110 },
+      { yPercent: 0, duration: 0.5, ease: "power3.out" }
+    );
+    return () => tween.kill();
+  }, [stageIndex, prefersReducedMotion]);
 
   useEffect(() => {
     if (prefersReducedMotion || isMobile) return;
@@ -121,36 +141,36 @@ export default function Hero() {
 
         <h1 className="sr-only">Sophia Honorato — Creative Developer</h1>
 
-        <div className="hero__tags" aria-hidden="true">
+        <div className={`hero__tags ${introVisible ? "" : "is-hidden"}`} aria-hidden="true">
           {FLOATING_TAGS.map((tag, i) => (
-            <span key={tag} className={`hero__tag hero__tag--${i}`}>
-              {tag}
+            <span key={tag} className={`hero__tag-wrap hero__tag--${i}`}>
+              <span className="hero__tag">{tag}</span>
             </span>
           ))}
         </div>
 
-        {heading && (
-          <div className="hero__heading">
-            <h2>{heading}</h2>
-          </div>
-        )}
+        <div className="hero__hud" aria-hidden="true">
+          <span className="hero__hud-index">
+            {String(stageIndex + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")}
+          </span>
+          <span className="hero__hud-mask">
+            <span className="hero__hud-label" ref={hudLabelRef}>
+              {STAGES[stageIndex].label}
+            </span>
+          </span>
+        </div>
 
-        <div className="hero__scroll-hint" aria-hidden="true">
+        <div className="hero__rail" aria-hidden="true">
+          <span ref={hudBarRef} />
+        </div>
+
+        <div className={`hero__scroll-hint ${introVisible ? "" : "is-hidden"}`} aria-hidden="true">
           <span />
           scroll
         </div>
       </div>
     </section>
   );
-}
-
-function resolveStageId(progress) {
-  if (progress < 0.15) return "start";
-  if (progress < 0.32) return "wake";
-  if (progress < 0.5) return "orbit";
-  if (progress < 0.68) return "code";
-  if (progress < 0.85) return "whoami";
-  return "projects";
 }
 
 // Versão leve/estática usada durante o carregamento do 3D, em prefers-reduced-motion,

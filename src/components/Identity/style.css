@@ -1,11 +1,24 @@
 .identity {
   position: relative;
   padding: clamp(6rem, 14vh, 10rem) 0;
-  background: var(--color-bg);
+  border-top: 1px solid var(--line);
   overflow: hidden;
 }
 
+/* halo de luz no canto, como as luzes de recorte da cena */
+.identity::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -15%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(77, 184, 242, 0.14), transparent 62%);
+  pointer-events: none;
+}
+
 .identity__manifesto {
+  position: relative;
   margin-bottom: clamp(4rem, 10vh, 7rem);
 }
 
@@ -14,15 +27,20 @@
   font-weight: 600;
   font-size: clamp(2rem, 6vw, 4.5rem);
   line-height: 1.05;
+  letter-spacing: -0.01em;
   margin: 0;
-  color: var(--color-dark);
+  color: var(--text);
 }
 
 .identity__line--accent {
-  color: var(--color-blue-500);
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent-hot);
+  /* glow por filter no elemento inteiro: text-shadow seria cortado pela máscara do SplitText */
+  filter: drop-shadow(0 0 14px rgba(77, 184, 242, 0.55));
 }
 
 .identity__about {
+  position: relative;
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: clamp(2rem, 6vw, 5rem);
@@ -33,59 +51,113 @@
   font-family: var(--font-body);
   font-size: clamp(1rem, 1.6vw, 1.35rem);
   line-height: 1.6;
-  color: var(--color-dark);
+  color: var(--text-soft);
   max-width: 46ch;
+  margin: 0 0 1.1em;
+}
+
+.eyebrow + .identity__paragraph {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--accent-hot);
+}
+
+.identity__paragraph:last-of-type {
+  margin-bottom: 0;
 }
 
 .identity__stats {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1rem;
 }
 
+/* cada número é um painel de HUD */
 .identity__stat {
+  position: relative;
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--color-blue-100);
-  padding-top: 0.75rem;
+  padding: 1.1rem 1.25rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* o número e o rótulo "saltam" para fora do painel quando ele inclina */
+.identity__stat-value {
+  transform: translateZ(38px);
+}
+
+.identity__stat-label {
+  transform: translateZ(20px);
+}
+
+.identity__stat-rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  height: 2px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+  box-shadow: var(--glow);
 }
 
 .identity__stat-value {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(2rem, 4vw, 3rem);
-  color: var(--color-dark);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 1.1;
+  color: var(--text);
+  text-shadow: var(--glow-text);
 }
 
 .identity__stat-label {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-gray);
+  color: var(--muted);
 }
 
 .identity__marquee {
+  position: relative;
   margin-top: clamp(4rem, 10vh, 7rem);
-  border-top: 1px solid var(--color-blue-100);
-  border-bottom: 1px solid var(--color-blue-100);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgba(10, 22, 34, 0.5);
   padding: 1.25rem 0;
   overflow: hidden;
 }
 
 .identity__marquee-track {
   display: flex;
-  gap: 3rem;
   width: max-content;
   animation: identity-marquee 22s linear infinite;
+  will-change: transform;
+}
+
+/* o GSAP assume a faixa (velocidade reage ao scroll) */
+.identity__marquee-track.is-gsap {
+  animation: none;
 }
 
 .identity__marquee-item {
-  font-family: var(--font-display);
-  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
   font-weight: 500;
-  color: var(--color-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
   white-space: nowrap;
+}
+
+.identity__marquee-item::after {
+  content: "//";
+  margin: 0 1.6rem;
+  color: var(--violet);
+  text-shadow: 0 0 14px rgba(139, 124, 255, 0.8);
 }
 
 @keyframes identity-marquee {

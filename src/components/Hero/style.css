@@ -1,7 +1,7 @@
 .hero {
   position: relative;
   width: 100%;
-  background: #f7fafc;
+  background: #050d16; /* mesma cor da cena 3D: sem flash enquanto ela carrega */
 }
 
 .hero__sticky {
@@ -20,93 +20,54 @@
   z-index: 1;
 }
 
-.hero__intro {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.hero__intro.is-hidden {
-  opacity: 0;
-  transform: translateY(-16px);
-}
-
-.hero__eyebrow {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(0.7rem, 1vw, 0.85rem);
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: #4db8f2;
-  margin: 0 0 0.75rem;
-}
-
-.hero__name {
-  font-family: "Neue Montreal", "Space Grotesk", sans-serif;
-  font-weight: 600;
-  font-size: clamp(2.6rem, 9vw, 7rem);
-  line-height: 0.95;
-  letter-spacing: -0.01em;
-  color: #ffff;
-  margin: 0;
-}
-
-
-
 .hero__tags {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.hero__tags.is-hidden,
+.hero__scroll-hint.is-hidden {
+  opacity: 0;
+}
+
+/* o wrap é posicionado e animado pelo GSAP; a tag dentro flutua em CSS */
+.hero__tag-wrap {
+  position: absolute;
 }
 
 .hero__tag {
-  position: absolute;
+  display: block;
   font-family: "Space Grotesk", sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
-  color: #718096;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid #bae6fd;
+  color: #bae6fd;
+  background: rgba(7, 21, 34, 0.55);
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  box-shadow: 0 0 18px -4px rgba(77, 184, 242, 0.6), inset 0 0 12px -6px rgba(77, 184, 242, 0.8);
   border-radius: 999px;
   padding: 0.35rem 0.9rem;
   backdrop-filter: blur(6px);
   animation: hero-float 6s ease-in-out infinite;
 }
 
-.hero__tag--0 { top: 18%; left: 10%; animation-delay: 0s; }
-.hero__tag--1 { top: 28%; right: 12%; animation-delay: 0.8s; }
-.hero__tag--2 { bottom: 30%; left: 14%; animation-delay: 1.6s; }
-.hero__tag--3 { bottom: 20%; right: 16%; animation-delay: 2.4s; }
-.hero__tag--4 { top: 50%; right: 6%; animation-delay: 3.2s; }
+.hero__tag--0 .hero__tag { animation-delay: 0s; }
+.hero__tag--1 .hero__tag { animation-delay: 0.8s; }
+.hero__tag--2 .hero__tag { animation-delay: 1.6s; }
+.hero__tag--3 .hero__tag { animation-delay: 2.4s; }
+.hero__tag--4 .hero__tag { animation-delay: 3.2s; }
+
+.hero__tag--0 { top: 18%; left: 10%; }
+.hero__tag--1 { top: 28%; right: 8%; }
+.hero__tag--2 { bottom: 30%; left: 14%; }
+.hero__tag--3 { bottom: 20%; right: 12%; }
+.hero__tag--4 { top: 50%; right: 6%; }
 
 @keyframes hero-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
-}
-
-.hero__heading {
-  position: absolute;
-  z-index: 2;
-  bottom: 14%;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.hero__heading h2 {
-  font-family: "Neue Montreal", "Space Grotesk", sans-serif;
-  font-weight: 600;
-  font-size: clamp(1.8rem, 5vw, 3.5rem);
-  color: #071522;
-  margin: 0;
-  animation: hero-heading-in 0.6s ease;
-}
-
-@keyframes hero-heading-in {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .hero__scroll-hint {
@@ -123,7 +84,69 @@
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #718096;
+  color: #7dd3fc;
+  transition: opacity 0.5s ease;
+}
+
+/* ---------- HUD (estágio atual) ---------- */
+
+.hero__hud {
+  position: absolute;
+  z-index: 2;
+  left: var(--container-padding);
+  bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: "Space Grotesk", sans-serif;
+  text-transform: uppercase;
+  color: #f7fafc;
+  text-shadow: 0 0 22px rgba(77, 184, 242, 0.5);
+  transition: color 0.5s ease;
+  pointer-events: none;
+}
+
+.hero__hud-index {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+}
+
+.hero__hud-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.hero__hud-label {
+  display: block;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.hero__rail {
+  position: absolute;
+  z-index: 2;
+  right: var(--container-padding);
+  top: 50%;
+  width: 1px;
+  height: 22vh;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.25);
+  transition: background 0.5s ease;
+  pointer-events: none;
+}
+
+.hero__rail span {
+  display: block;
+  width: 3px;
+  margin-left: -1px;
+  height: 100%;
+  background: #7dd3fc;
+  transition: background 0.5s ease;
+  transform-origin: top;
+  transform: scaleY(0);
 }
 
 .hero__scroll-hint span {
@@ -146,7 +169,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 40%, #eaf7ff 0%, #f7fafc 70%);
+  background: radial-gradient(circle at 50% 45%, #0e2233 0%, #050d16 70%);
 }
 
 .hero__fallback-monitor {
@@ -155,7 +178,7 @@
   background: #0f1e2b;
   border-radius: 10px;
   padding: 14px;
-  box-shadow: 0 30px 60px -20px rgba(7, 21, 34, 0.35);
+  box-shadow: 0 0 80px -10px rgba(77, 184, 242, 0.45);
 }
 
 .hero__fallback-screen {
@@ -184,6 +207,7 @@
 
 @media (max-width: 768px) {
   .hero__tag--4 { display: none; }
+  .hero__rail { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -231,6 +255,4 @@
   .hero__tag--2 { bottom: 24%; left: 6%; }
   .hero__tag--3 { bottom: 16%; right: 6%; }
   .hero__tag--4 { display: none; }
-
-  .hero__heading { width: 90%; text-align: center; }
 }

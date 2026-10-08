@@ -1,6 +1,5 @@
 .work {
   position: relative;
-  background: var(--color-bg);
 }
 
 .work__intro {
@@ -14,7 +13,7 @@
   font-size: clamp(2.4rem, 7vw, 5rem);
   line-height: 1.05;
   margin: 0;
-  color: var(--color-dark);
+  color: var(--text);
 }
 
 .work__pin {
@@ -22,12 +21,39 @@
 }
 
 .work__sticky {
+  position: relative;
   height: 100vh;
+  height: 100svh;
   display: flex;
   align-items: center;
+  overflow: hidden; /* as janelas que saem voando somem na borda da seção */
+}
+
+/* nome do projeto gigante, vazado, deslizando ao fundo */
+.work__ghost {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4vh;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.work__ghost span {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(6rem, 19vw, 18rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(125, 211, 252, 0.14);
+  will-change: transform;
 }
 
 .work__grid {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1.1fr;
   gap: clamp(2rem, 6vw, 5rem);
@@ -36,38 +62,82 @@
 }
 
 .work__info {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .work__panel {
-  position: absolute;
-  top: 0;
-  left: 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.9rem;
+  /* reserva a altura do projeto com mais texto: o contador não pula na troca */
+  min-height: 24rem;
 }
 
 .work__number {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-size: 0.85rem;
-  color: var(--color-blue-500);
-  letter-spacing: 0.1em;
+  color: var(--accent-hot);
+  letter-spacing: 0.14em;
+  text-shadow: var(--glow-text);
+}
+
+.work__number::before {
+  content: "[ ";
+  color: var(--violet);
+}
+
+.work__number::after {
+  content: " ]";
+  color: var(--violet);
 }
 
 .work__name {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.05;
   margin: 0;
-  color: var(--color-dark);
+  color: var(--text);
+  text-shadow: 0 0 30px rgba(77, 184, 242, 0.35);
 }
 
 .work__category {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.work__description {
   font-family: var(--font-body);
   font-size: 1rem;
-  color: var(--color-gray);
+  line-height: 1.6;
+  color: var(--text-soft);
+  max-width: 42ch;
   margin: 0;
+}
+
+.work__link {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent-hot);
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  box-shadow: var(--glow);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.work__link:hover {
+  background: #fff;
+  box-shadow: 0 0 36px -4px rgba(155, 225, 255, 0.95);
 }
 
 .work__stack {
@@ -77,61 +147,242 @@
 }
 
 .work__stack li {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-dark);
-  border: 1px solid var(--color-blue-100);
+  color: var(--accent-hot);
+  background: rgba(77, 184, 242, 0.07);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
 }
 
 .work__count {
-  position: absolute;
-  bottom: -3rem;
-  left: 0;
-  font-family: var(--font-display);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin: 1.5rem 0 0;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.1em;
-  color: var(--color-gray);
+  color: var(--muted);
 }
 
-.work__visual {
+.work__progress {
+  flex: 0 1 9rem;
+  height: 1px;
+  background: var(--line);
+}
+
+.work__progress span {
+  display: block;
+  height: 3px;
+  margin-top: -1px;
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+  box-shadow: var(--glow);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* atalhos para cada projeto */
+.work__dots {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.work__dots button {
   position: relative;
-  height: 62vh;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.work__dots button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 6px;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 2px;
+  background: var(--line-strong);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.work__dots button:hover::before,
+.work__dots button.is-active::before {
+  background: var(--accent-hot);
+  box-shadow: var(--glow);
+}
+
+/* ---------- deck 3D de janelas ---------- */
+
+.work__visual {
+  perspective: 1300px;
+  perspective-origin: 30% 50%;
+}
+
+.work__deck {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* a primeira janela dá o tamanho do deck; as outras empilham em cima dela */
+.work__window {
+  display: block;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #061019;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(77, 184, 242, 0.08),
+    0 40px 90px -40px rgba(77, 184, 242, 0.6),
+    0 0 70px -24px rgba(139, 124, 255, 0.55);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.work__window + .work__window {
+  position: absolute;
+  inset: 0;
+}
+
+.work__window.is-active {
+  border-color: var(--accent-hot);
+}
+
+.work__chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  white-space: nowrap;
   overflow: hidden;
 }
 
-.work__image-wrap {
-  position: absolute;
-  inset: 0;
-  display: block;
+.work__chrome i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1d3b52;
 }
 
-.work__image-wrap img {
+.work__chrome i:first-child {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.work__chrome span {
+  margin-left: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* "online" piscando no canto da barra */
+.work__chrome em {
+  margin-left: auto;
+  padding-left: 1rem;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent-hot);
+}
+
+.work__chrome em::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: #5eead4;
+  box-shadow: 0 0 10px #5eead4;
+  animation: work-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes work-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.work__screen {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 10; /* prints de site: mostra a tela inteira em vez de cortar as laterais */
+  max-height: 62vh;
+  overflow: hidden;
+}
+
+.work__screen img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;
+  transition: scale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.work__window.is-active:hover img {
+  scale: 1.05;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work__chrome em::before {
+    animation: none;
+  }
 }
 
 @media (max-width: 900px) {
   .work__sticky {
     height: auto;
-    padding: 6rem 0;
+    min-height: 100svh;
+    padding: calc(var(--nav-height) + 0.5rem) 0 1.5rem;
   }
 
   .work__grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 
-  .work__info {
-    position: relative;
-    min-height: 220px;
+  .work__panel {
+    gap: 0.55rem;
+    min-height: 19.5rem;
+  }
+
+  .work__ghost {
+    bottom: auto;
+    top: 42%;
   }
 
   .work__visual {
-    height: 42vh;
+    padding: 0 6% 0 0; /* espaço para as janelas da fila aparecerem atrás */
+  }
+
+  .work__description {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .work__link {
+    padding: 0.5rem 0.95rem;
+  }
+
+  .work__count {
+    margin-top: 0.5rem;
+  }
+
+  .work__dots {
+    margin-top: 0.25rem;
   }
 }

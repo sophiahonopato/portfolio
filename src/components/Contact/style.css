@@ -1,9 +1,38 @@
 .contact {
-  background: var(--color-blue-50);
-  padding: clamp(6rem, 16vh, 11rem) 0;
+  position: relative;
+  padding: clamp(7rem, 18vh, 12rem) 0 clamp(8rem, 22vh, 14rem);
+  border-top: 1px solid var(--line);
+  background: radial-gradient(70% 60% at 50% 100%, rgba(77, 184, 242, 0.2), transparent 70%);
+  overflow: hidden;
+}
+
+/* piso em grid com perspectiva: o mesmo chão da cena 3D do hero */
+.contact__floor {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 55%;
+  background-image:
+    linear-gradient(rgba(125, 211, 252, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 211, 252, 0.35) 1px, transparent 1px);
+  background-size: 70px 70px;
+  transform: perspective(520px) rotateX(64deg);
+  transform-origin: center bottom;
+  mask-image: linear-gradient(to top, #000 5%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to top, #000 5%, transparent 85%);
+  animation: contact-floor 3.2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes contact-floor {
+  to {
+    background-position: 0 70px;
+  }
 }
 
 .contact__inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -16,32 +45,70 @@
   font-size: clamp(2.4rem, 7vw, 5.5rem);
   line-height: 1.05;
   margin: 0;
-  color: var(--color-dark);
+  color: var(--text);
+  /* glow por filter no título inteiro: text-shadow seria cortado pela máscara do SplitText */
+  filter: drop-shadow(0 0 16px rgba(77, 184, 242, 0.4));
 }
 
 .contact__title span {
-  color: var(--color-blue-500);
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent-hot);
 }
 
 .contact__cta {
-  font-family: var(--font-display);
-  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  font-family: var(--font-mono);
+  font-size: clamp(0.95rem, 2.2vw, 1.5rem);
   font-weight: 500;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--color-dark);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--accent-hot);
+  text-shadow: var(--glow-text);
+  padding-bottom: 0.45rem;
   display: inline-block;
+  /* sublinhado que "redesenha" no hover */
+  background:
+    linear-gradient(90deg, var(--accent), var(--violet)) left bottom / 0% 2px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) left bottom / 100% 1px no-repeat;
+  transition: background-size 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+}
+
+.contact__cta::before {
+  content: "$ ";
+  color: var(--violet);
+}
+
+.contact__cta:hover {
+  color: #fff;
+  background-size: 100% 2px, 100% 1px;
 }
 
 .contact__socials {
   display: flex;
-  gap: 2rem;
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-gray);
+}
+
+.contact__socials a {
+  color: var(--text-soft);
+  background: rgba(5, 13, 22, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  transition: color 0.25s ease, border-color 0.25s ease, box-shadow 0.3s ease;
 }
 
 .contact__socials a:hover {
-  color: var(--color-dark);
+  color: var(--accent-hot);
+  border-color: var(--line-strong);
+  box-shadow: var(--glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact__floor {
+    animation: none;
+  }
 }

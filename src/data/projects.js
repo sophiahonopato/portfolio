@@ -52,5 +52,17 @@ export const projects = [
       "https://res.cloudinary.com/utjjtqtu/image/upload/v1789590664/wishes.jpg",
     url: "https://www.wishesbrand.com.br",
   },
+  {
+    id: "05",
+    slug: "pauloadvocacia",
+    name: "Paulo Advocacia",
+    category: "Site Institucional",
+    stack: ["React", "JavaScript", "CSS"],
+    description:
+      "Site do escritório Paulo F. Ferreira Advogados, em São Paulo: apresentação das áreas de atuação, corpo jurídico e contato, com visual sóbrio em azul-noite e dourado.",
+    color: "#0f2233",
+    // print salvo em public/projects/
+    image: "/projects/pauloadvocacia.jpg",
+    url: "https://pauloadvocacia.vercel.app",
+  },
 ];
-

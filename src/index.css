@@ -1,19 +1,30 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap");
-
 :root {
-  /* Cores */
-  --color-bg: #ffffff;
-  --color-bg-soft: #f7fafc;
-  --color-blue-50: #eaf7ff;
+  /* Paleta: a mesma da cena 3D do hero (noite + neon azul/violeta) */
+  --bg: #050d16;
+  --bg-raise: #0a1622;
+  --surface: rgba(13, 29, 44, 0.62);
+  --line: rgba(125, 211, 252, 0.16);
+  --line-strong: rgba(125, 211, 252, 0.42);
+  --text: #eaf7ff;
+  --text-soft: #c2d6e6;
+  --muted: #7f97ab;
+  --accent: #4db8f2;
+  --accent-hot: #9be1ff;
+  --violet: #8b7cff;
+  --glow: 0 0 28px -6px rgba(77, 184, 242, 0.75);
+  --glow-text: 0 0 18px rgba(77, 184, 242, 0.55);
+
+  /* nomes antigos, ainda usados em Nav/Cursor */
   --color-blue-100: #bae6fd;
   --color-blue-300: #7dd3fc;
   --color-blue-500: #4db8f2;
-  --color-dark: #071522;
-  --color-gray: #718096;
+  --color-dark: #050d16;
+  --color-gray: #7f97ab;
 
   /* Tipografia */
   --font-display: "Space Grotesk", "Neue Montreal", sans-serif;
   --font-body: "Manrope", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   /* Layout */
   --container-padding: clamp(1.25rem, 5vw, 4rem);
@@ -32,20 +43,81 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--color-bg);
-  color: var(--color-dark);
+  color: var(--text);
   font-family: var(--font-body);
   overflow-x: hidden;
 }
 
-body {
-  cursor: none; /* cursor customizado assume o controle em telas com mouse */
+/* o fundo fica só no <html>: se o <body> também tivesse, ele cobriria as
+   camadas com z-index negativo (o mundo 3D e o grid de fallback) */
+html {
+  background: var(--bg);
+  color-scheme: dark;
+  scrollbar-color: #1d3b52 var(--bg);
 }
 
-@media (pointer: coarse) {
-  body {
-    cursor: auto;
+/* Grid fixo ao fundo: o "piso" da cena 3D continua pela página inteira */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(77, 184, 242, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 184, 242, 0.055) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, #000 30%, transparent 100%);
+}
+
+/* brilho que acompanha o mouse nos elementos com tilt 3D */
+[data-tilt] {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+[data-tilt]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--tilt-x, 50%) var(--tilt-y, 50%), rgba(155, 225, 255, 0.2), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+[data-tilt]:hover::after {
+  opacity: 1;
+}
+
+/* com o mundo 3D ativo o piso já é o grid da cena */
+.has-world body::before,
+.has-world .contact__floor {
+  display: none;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* cursor customizado assume o controle em telas com mouse — inclui links e
+   botões, senão a "mãozinha" nativa aparece junto com ele */
+@media (pointer: fine) {
+  body,
+  a,
+  button {
+    cursor: none;
   }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-blue-500);
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 a {
@@ -57,13 +129,7 @@ button {
   font-family: inherit;
   background: none;
   border: none;
-  cursor: none;
-}
-
-@media (pointer: coarse) {
-  button {
-    cursor: pointer;
-  }
+  cursor: pointer;
 }
 
 ul {
@@ -83,13 +149,27 @@ img {
   padding-right: var(--container-padding);
 }
 
+/* rótulo de seção no estilo prompt de terminal */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-blue-500);
-  margin: 0 0 0.75rem;
+  color: var(--accent-hot);
+  text-shadow: var(--glow-text);
+  margin: 0 0 1rem;
+}
+
+.eyebrow::before {
+  content: "> ";
+  color: var(--violet);
+}
+
+/* texto vazado em neon — o mesmo tratamento do "HONORATO" na tela do PC */
+.neon-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent-hot);
+  filter: drop-shadow(0 0 14px rgba(77, 184, 242, 0.5));
 }
 
 @media (prefers-reduced-motion: reduce) {

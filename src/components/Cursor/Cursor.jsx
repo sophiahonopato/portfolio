@@ -6,6 +6,8 @@ export default function Cursor() {
   const ringRef = useRef(null);
   const [label, setLabel] = useState("");
   const [enabled, setEnabled] = useState(false);
+  // só aparece depois do primeiro movimento (senão fica parado no meio da tela ao carregar)
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -16,9 +18,17 @@ export default function Cursor() {
     const pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     const ring = { x: pos.x, y: pos.y };
 
+    let hasMoved = false;
+
     function handleMove(e) {
       pos.x = e.clientX;
       pos.y = e.clientY;
+      if (!hasMoved) {
+        hasMoved = true;
+        ring.x = pos.x;
+        ring.y = pos.y;
+        setVisible(true);
+      }
       if (dotRef.current) {
         dotRef.current.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
       }
@@ -50,8 +60,8 @@ export default function Cursor() {
 
   return (
     <>
-      <div ref={dotRef} className="cursor-dot" />
-      <div ref={ringRef} className={`cursor-monitor ${label ? "has-label" : ""}`}>
+      <div ref={dotRef} className={`cursor-dot ${visible ? "is-visible" : ""}`} />
+      <div ref={ringRef} className={`cursor-monitor ${visible ? "is-visible" : ""} ${label ? "has-label" : ""}`}>
         <svg viewBox="0 0 48 40" className="cursor-monitor__svg" aria-hidden="true">
           {/* Corpo do monitor */}
           <rect x="3" y="3" width="42" height="27" rx="3" className="cursor-monitor__frame" />

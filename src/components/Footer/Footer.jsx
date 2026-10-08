@@ -1,3 +1,4 @@
+import { scrollToTarget } from "../../lib/scroll";
 import "./style.css";
 
 export default function Footer() {
@@ -5,7 +6,14 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer__inner container">
         <span>© {new Date().getFullYear()} Sophia Honorato</span>
-        <a href="#hero" data-cursor="TOP">
+        <a
+          href="#hero"
+          data-cursor="TOP"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToTarget(0);
+          }}
+        >
           Back to top ↑
         </a>
       </div>

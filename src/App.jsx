@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -12,10 +12,24 @@ import Journey from "./components/Journey/Journey";
 import BeyondCode from "./components/BeyondCode/BeyondCode";
 import Contact from "./components/Contact/Contact";
 import Footer from "./components/Footer/Footer";
+import { setLenis } from "./lib/scroll";
+import { usePageAnimations } from "./hooks/usePageAnimations";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// three.js só é baixado junto com o chunk do hero
+const World3D = lazy(() => import("./components/World3D/World3D"));
+
+const prefersReducedMotionQuery = "(prefers-reduced-motion: reduce)";
+
 export default function App() {
+  // mundo 3D de fundo: desligado com movimento reduzido (fica o grid em CSS)
+  const [world, setWorld] = useState(null);
+  useEffect(() => {
+    if (window.matchMedia(prefersReducedMotionQuery).matches) return;
+    setWorld({ isMobile: window.matchMedia("(max-width: 768px)").matches });
+  }, []);
+
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
@@ -25,21 +39,24 @@ export default function App() {
       smoothWheel: true,
     });
 
+    setLenis(lenis);
+
     lenis.on("scroll", ScrollTrigger.update);
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    const rafId = requestAnimationFrame(raf);
-
+    // Lenis roda no mesmo ticker do GSAP: scroll e ScrollTrigger ficam
+    // sincronizados no mesmo frame (sem um rAF paralelo).
+    const tick = (time) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(tick);
+      setLenis(null);
       lenis.destroy();
     };
   }, []);
+
+  usePageAnimations();
 
   // Refresh global do ScrollTrigger depois que a página estiver totalmente
   // "assentada" — cobre fontes customizadas carregando tarde e o Hero3D
@@ -74,6 +91,11 @@ export default function App() {
 
   return (
     <>
+      {world && (
+        <Suspense fallback={null}>
+          <World3D isMobile={world.isMobile} />
+        </Suspense>
+      )}
       <Cursor />
       <Nav />
       <main>

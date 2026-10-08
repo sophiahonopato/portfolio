@@ -20,42 +20,150 @@
 /* ---------- Tela do monitor ---------- */
 
 .hero3d-screen {
-  width: 400px; /* ajuste até casar com a moldura do monitor */
+  /* 400 × 228px = proporção da tela do monitor (1.72 × 0.98); o encaixe
+     no modelo 3D é feito pelo SCREEN_SCALE em Screen.jsx */
+  position: relative;
+  width: 400px;
+  height: 228px;
   box-sizing: border-box;
-  padding: 20px 24px;
-  background: #071522;
-  border-radius: 6px;
+  padding: 16px 22px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(77, 184, 242, 0.16), transparent 60%),
+    #061019;
+  border-radius: 3px;
   font-family: "Space Grotesk", "JetBrains Mono", monospace;
-  font-size: 16px;
-  line-height: 1.55;
-  color: #7dd3fc;
+  font-size: 17px;
+  line-height: 1.45;
+  color: #9be1ff;
+  text-shadow: 0 0 8px rgba(77, 184, 242, 0.55);
   white-space: pre-wrap;
   overflow: hidden;
+  transform-origin: center;
+  animation: hero3d-crt-on 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
+/* scanlines + faixa de varredura */
+.hero3d-screen::before,
+.hero3d-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero3d-screen::before {
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+
+.hero3d-screen::after {
+  height: 40%;
+  background: linear-gradient(to bottom, transparent, rgba(125, 211, 252, 0.07), transparent);
+  animation: hero3d-scan 4.5s linear infinite;
+}
+
+/* liga como um CRT: uma linha que abre, com um flash */
+@keyframes hero3d-crt-on {
+  0% {
+    transform: scale(1, 0.006);
+    filter: brightness(6);
+    opacity: 0;
+  }
+  18% {
+    transform: scale(1, 0.006);
+    filter: brightness(6);
+    opacity: 1;
+  }
+  55% {
+    transform: scale(1, 1);
+    filter: brightness(2.2);
+  }
+  70% {
+    filter: brightness(0.7);
+  }
+  100% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+    opacity: 1;
+  }
+}
+
+@keyframes hero3d-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(260%);
+  }
+}
+
+/* ---------- Terminal ---------- */
+
+.hero3d-terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: -4px 0 8px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a6a82;
+  text-shadow: none;
+}
+
+.hero3d-terminal__bar i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1d3b52;
+}
+
+.hero3d-terminal__bar i:first-child {
+  background: #4db8f2;
+}
+
+.hero3d-terminal__bar span {
+  margin-left: 6px;
+}
+
+/* cada linha é "digitada": o clip-path abre em passos, um por caractere */
 .hero3d-screen__line {
   margin: 0;
-  opacity: 0;
-  animation: hero3d-line-in 0.35s ease forwards;
+  width: fit-content;
+  clip-path: inset(0 100% 0 0);
+  animation-name: hero3d-type;
+  animation-fill-mode: forwards;
+}
+
+@keyframes hero3d-type {
+  to {
+    clip-path: inset(0 -2% 0 0);
+  }
+}
+
+.hero3d-tok--prompt {
+  color: #8b7cff;
+}
+
+.hero3d-tok--kw {
+  color: #c4b5fd;
+}
+
+.hero3d-tok--str {
+  color: #f7fafc;
+}
+
+.hero3d-tok--tag {
+  color: #f7fafc;
 }
 
 .hero3d-screen__cursor {
   display: inline-block;
-  width: 6px;
-  height: 10px;
-  background: #7dd3fc;
+  width: 8px;
+  height: 14px;
+  background: #9be1ff;
+  box-shadow: 0 0 8px rgba(77, 184, 242, 0.8);
   animation: hero3d-blink 1s step-end infinite;
-}
-
-@keyframes hero3d-line-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes hero3d-blink {
@@ -76,7 +184,7 @@
   flex-direction: column;
   justify-content: center;
   height: 100%;
-  padding: 0 32px;
+  padding: 0 14px;
 }
 
 .hero3d-identity__eyebrow {
@@ -86,12 +194,12 @@
   color: #7dd3fc;
   margin-bottom: 1.1rem;
   opacity: 0;
-  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
 }
 
 .hero3d-identity__name {
   margin: 0;
-  font-size: 59px;
+  font-size: 62px;
   line-height: 0.86;
   letter-spacing: -0.045em;
   font-weight: 600;
@@ -107,11 +215,11 @@
 }
 
 .hero3d-identity__name span:nth-child(1) {
-  animation-delay: 0.22s;
+  animation-delay: 0.62s;
 }
 
 .hero3d-identity__name span:nth-child(2) {
-  animation-delay: 0.34s;
+  animation-delay: 0.74s;
   color: transparent;
   -webkit-text-stroke: 1.5px #7dd3fc;
 }
@@ -123,7 +231,7 @@
   text-transform: uppercase;
   color: #718096;
   opacity: 0;
-  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+  animation: hero3dIdentityIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
 }
 
 @keyframes hero3dIdentityIn {
@@ -137,34 +245,17 @@
   }
 }
 
-/* ---------- Celular em pé ---------- */
-/* a tela aparece menor, então compensa no texto */
-
-.hero3d-screen--portrait {
-  font-size: 18px;
-}
-
-.hero3d-screen--portrait .hero3d-identity__eyebrow {
-  font-size: 15px;
-  letter-spacing: 0.3em;
-}
-
-.hero3d-screen--portrait .hero3d-identity__meta {
-  font-size: 14px;
-  letter-spacing: 0.1em;
-}
-
-/* o contorno de 1.5px vira um fio quando a tela é reduzida */
-.hero3d-screen--portrait .hero3d-identity__name span:nth-child(2) {
-  -webkit-text-stroke: 2.5px #7dd3fc;
-}
-
 /* ---------- Movimento reduzido ---------- */
 
 @media (prefers-reduced-motion: reduce) {
+  .hero3d-screen,
+  .hero3d-screen::after {
+    animation: none;
+  }
+
   .hero3d-screen__line {
     animation: none;
-    opacity: 1;
+    clip-path: none;
   }
 
   .hero3d-screen__cursor {
