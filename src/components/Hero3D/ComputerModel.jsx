@@ -74,7 +74,40 @@ function PrimitiveComputer({ isMobile, progressRef, bootRef }) {
       side: THREE.DoubleSide,
       depthWrite: false,
     });
+    // Halos: sprites com gradiente radial e blending aditivo. Fazem o papel do
+    // bloom sem pós-processamento (a opacidade segue a energia do boot).
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, "rgba(255,255,255,1)");
+    gradient.addColorStop(0.3, "rgba(255,255,255,0.35)");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+    const glowMap = new THREE.CanvasTexture(canvas);
+    const halo = (color, opacity) => ({
+      base: opacity,
+      material: new THREE.SpriteMaterial({
+        map: glowMap,
+        color,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        toneMapped: false,
+      }),
+    });
+
     return {
+      halos: {
+        screen: halo(ACCENT, 0.55),
+        bar: halo(ACCENT_HOT, 0.5),
+        caseSide: halo(VIOLET, 0.6),
+        caseFront: halo(ACCENT, 0.4),
+        keys: halo(VIOLET, 0.35),
+        desk: halo(ACCENT, 0.3),
+      },
       body,
       bodyDark,
       desk,
@@ -114,6 +147,7 @@ function PrimitiveComputer({ isMobile, progressRef, bootRef }) {
 
     for (const g of mats.glows) g.material.color.copy(g.base).multiplyScalar(0.04 + energy * 0.96);
     mats.underGlow.opacity = 0.22 * energy;
+    for (const h of Object.values(mats.halos)) h.material.opacity = h.base * energy;
     if (screenLight.current) screenLight.current.intensity = 2.2 * energy;
     if (caseLight.current) caseLight.current.intensity = 1.6 * energy;
   });
@@ -158,6 +192,10 @@ function PrimitiveComputer({ isMobile, progressRef, bootRef }) {
           <boxGeometry args={[0.74, 0.006, 0.012]} />
         </mesh>
 
+        {/* halos: contorno de luz atrás do monitor e brilho da light bar */}
+        <sprite position={[0, 0, -0.25]} scale={[3.6, 2.6, 1]} material={mats.halos.screen.material} />
+        <sprite position={[0, 0.6, 0.1]} scale={[1.7, 0.4, 1]} material={mats.halos.bar.material} />
+
         {/* Luz que a tela joga no teclado/mesa */}
         <pointLight ref={screenLight} position={[0, -0.1, 0.55]} color="#4DB8F2" intensity={0} distance={2.6} decay={1.6} />
 
@@ -170,6 +208,10 @@ function PrimitiveComputer({ isMobile, progressRef, bootRef }) {
 
       {/* ---------- Teclado ---------- */}
       <Keyboard position={[0, DESK_TOP + 0.03, 0.72]} mats={mats} live={live} bootRef={bootRef} />
+
+      {/* halos do teclado e da borda da mesa */}
+      <sprite position={[0, DESK_TOP + 0.1, 0.72]} scale={[1.7, 0.6, 1]} material={mats.halos.keys.material} />
+      <sprite position={[0, DESK_TOP - 0.03, 1.24]} scale={[4.6, 0.5, 1]} material={mats.halos.desk.material} />
 
       {/* ---------- Mouse ---------- */}
       <group position={[0.82, DESK_TOP + 0.045, 0.74]} rotation={[0, 0.25, 0]}>
@@ -246,6 +288,10 @@ function PrimitiveComputer({ isMobile, progressRef, bootRef }) {
         {[0.28, 0, -0.28].map((y, i) => (
           <Fan key={y} position={[-0.03, y, 0.436]} radius={0.115} glow={i === 1 ? glowV : glowA} mats={mats} live={live} />
         ))}
+
+        {/* halos do gabinete: interior (vidro) e fans da frente */}
+        <sprite position={[0.26, 0, 0]} scale={[1.5, 1.5, 1]} material={mats.halos.caseSide.material} />
+        <sprite position={[-0.03, 0, 0.5]} scale={[0.95, 1.6, 1]} material={mats.halos.caseFront.material} />
 
         {/* Botão de power */}
         <mesh position={[-0.03, 0.452, 0.3]} material={glowHot}>

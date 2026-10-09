@@ -1,7 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sparkles, Environment, Lightformer, Grid } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import gsap from "gsap";
 import ComputerScene from "./ComputerScene";
 import CameraController from "./CameraController";
@@ -17,8 +16,6 @@ export default function Hero3D({
   prefersReducedMotion = false,
   modelUrl = null,
 }) {
-  const highQuality = !isMobile && !prefersReducedMotion;
-
   const dpr = useMemo(() => {
     if (typeof window === "undefined") return 1;
     return Math.min(window.devicePixelRatio || 1, 1.5);
@@ -103,11 +100,10 @@ export default function Hero3D({
           />
         )}
 
-        {highQuality && (
-          <EffectComposer multisampling={4}>
-            <Bloom intensity={1} luminanceThreshold={0.42} luminanceSmoothing={0.25} mipmapBlur radius={0.75} />
-          </EffectComposer>
-        )}
+        {/* Sem pós-processamento (EffectComposer/Bloom): os framebuffers float com
+            multiamostragem deixavam o canvas inteiro em branco no Safari. O brilho
+            agora vem de halos aditivos no próprio modelo (ver ComputerModel) e o
+            antialiasing é o nativo do canvas — funciona em qualquer navegador. */}
       </Canvas>
     </div>
   );

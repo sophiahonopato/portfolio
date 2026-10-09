@@ -92,7 +92,7 @@ export default function Journey3D({ progressRef, milestones, isMobile = false })
   }, [isMobile]);
 
   const dpr = useMemo(
-    () => (typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2)),
+    () => (typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio || 1, 1.5)),
     [isMobile]
   );
 

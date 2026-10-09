@@ -30,6 +30,21 @@ export default function Journey() {
   const [active, setActive] = useState(0);
   const [mode, setMode] = useState(null); // null até medir | "static" | "3d"
   const [isMobile, setIsMobile] = useState(false);
+  // O canvas WebGL só é criado com a seção perto da tela e é destruído quando ela
+  // fica longe: menos contextos e memória de GPU ao mesmo tempo (o Safari e GPUs
+  // integradas derrubam contextos quando há muitos canvases grandes vivos).
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => setNear(entry.isIntersecting), { rootMargin: "100% 0px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mode]);
 
   useEffect(() => {
     setIsMobile(window.matchMedia("(max-width: 768px)").matches);
@@ -94,7 +109,7 @@ export default function Journey() {
   return (
     <section className="journey" id="journey" ref={sectionRef}>
       <div className="journey__sticky" ref={stickyRef}>
-        {mode === "3d" && (
+        {mode === "3d" && near && (
           <Suspense fallback={null}>
             <Journey3D progressRef={progressRef} milestones={MILESTONES} isMobile={isMobile} />
           </Suspense>
